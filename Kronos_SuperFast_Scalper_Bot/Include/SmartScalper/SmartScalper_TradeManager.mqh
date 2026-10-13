@@ -309,8 +309,8 @@ public:
 
          if(total_profit >= target_margin_roi)
            {
-            PrintFormat("🎯 [MARGIN_ROI_TP] 100%% Invested Margin Return reached! Net PnL: +$%.2f USD >= Target +$%.2f USD (Margin Locked: $%.2f USD). Closing all %d positions.",
-                        total_profit, target_margin_roi, total_margin, count);
+            PrintFormat("🎯 [MARGIN_ROI_TP] %.0f%% Invested Margin Return reached! Net PnL: +$%.2f USD >= Target +$%.2f USD (Margin Locked: $%.2f USD). Closing all %d positions.",
+                        InpInvestedMarginROI_Pct, total_profit, target_margin_roi, total_margin, count);
             CloseAllPositions(StringFormat("MARGIN_ROI_TP (+$%.2f)", total_profit));
             return true;
            }

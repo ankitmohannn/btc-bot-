@@ -77,8 +77,8 @@ input double InpBasketStopLossUSD   = 25.00;    // Emergency Basket Stop Loss in
 input int    InpGridStepPoints      = 6000;     // Pullback Step Distance
 input int    InpMaxOpenTrades       = 12;       // Maximum Concurrent Open Positions (Max 12 positions)
 input double InpMaxTotalBasketLots  = 4.50;     // Maximum Total Combined Volume on Active Side (Max 4.50 Lots)
-input bool   InpEnableInvestedMarginTP = true;  // Close Basket when Floating Profit >= Total Margin Invested (100% Margin ROI)
-input double InpInvestedMarginROI_Pct = 100.0;  // Target ROI on Invested Margin (100% = 1:1 Profit to Margin)
+input bool   InpEnableInvestedMarginTP = true;  // Close Basket when Floating Profit >= Target Margin ROI (50% Margin ROI)
+input double InpInvestedMarginROI_Pct = 50.0;   // Target ROI on Invested Margin (50% = 1:0.5 Profit to Margin)
 input bool   InpEnablePartialTP     = false;    // Disable Partial TP (Let full position run to Take Profit)
 input double InpPartialTPTriggerR   = 1.0;      // Partial TP Trigger at X R-Multiple (1.0R)
 input double InpPartialTPPercent   = 50.0;     // Percentage of Volume to Close (50.0%)
