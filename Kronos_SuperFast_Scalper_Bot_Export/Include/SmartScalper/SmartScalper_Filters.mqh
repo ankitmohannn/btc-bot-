@@ -202,16 +202,32 @@ public:
          return false;
         }
 
-      // 3. Max Open Trades Check (Enforced Minimum 50)
-      int max_allowed = MathMax(50, InpMaxOpenTrades);
-      if(open_positions_count >= max_allowed)
+      // 3. Max Open Trades Check (Default 12 max)
+      if(open_positions_count >= InpMaxOpenTrades)
         {
          m_rej_max_pos++;
-         rejection_reason = StringFormat("MAX_POSITIONS_REACHED (%d/%d)", open_positions_count, max_allowed);
+         rejection_reason = StringFormat("MAX_POSITIONS_REACHED (%d/%d)", open_positions_count, InpMaxOpenTrades);
          return false;
         }
 
-      // 3b. Pullback Step Check for Basket DCA Scale-in (Method 2)
+      // 3b. Max Total Basket Volume Check (Default 4.50 Lots Max on Active Side)
+      double current_basket_lots = 0.0;
+      for(int i = PositionsTotal() - 1; i >= 0; i--)
+        {
+         ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket)) continue;
+         if(PositionGetString(POSITION_SYMBOL) != m_symbol || PositionGetInteger(POSITION_MAGIC) != InpMagicNumber)
+            continue;
+         current_basket_lots += PositionGetDouble(POSITION_VOLUME);
+        }
+      if(current_basket_lots >= InpMaxTotalBasketLots)
+        {
+         m_rej_max_pos++;
+         rejection_reason = StringFormat("MAX_BASKET_LOTS_REACHED (%.2f >= %.2f Lots)", current_basket_lots, InpMaxTotalBasketLots);
+         return false;
+        }
+
+      // 3c. Pullback Step Check for Basket DCA Scale-in
       if(InpEnableBasketDCA && open_positions_count > 0)
         {
          double last_entry_price = 0.0;
@@ -241,7 +257,7 @@ public:
               }
            }
 
-         // Block taking opposing trades while a basket is active
+         // Block taking opposing trades while a DCA basket is actively averaging
          if(has_opposing)
            {
             rejection_reason = "OPPOSING_BASKET_ACTIVE";

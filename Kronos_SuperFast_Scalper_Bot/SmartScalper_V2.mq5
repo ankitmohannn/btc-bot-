@@ -254,6 +254,16 @@ void ProcessMarketCycle()
 
    if(g_active_signal_dir == "BUY" || g_active_signal_dir == "SELL")
      {
+      // A. Priority Reversal Flip: Liquidate opposite positions immediately upon confirmed signal
+      double closed_opp_pnl = 0.0;
+      int opp_closed = g_trade_manager.CloseOppositePositions(candidate_is_buy, closed_opp_pnl, "Signal Reversal Flip");
+      if(opp_closed > 0)
+        {
+         PrintFormat("🔄 [SIGNAL_REVERSAL] Closed %d opposite trades. Realized PnL: %s$%.2f USD. Resetting basket for %s.",
+                     opp_closed, (closed_opp_pnl >= 0 ? "+" : ""), closed_opp_pnl, g_active_signal_dir);
+         open_positions = g_trade_manager.GetOpenPositionsCount();
+        }
+
       bool allowed_by_regime = g_regime_engine.IsRegimeDirectionAllowed(g_current_regime, candidate_is_buy);
       if(!allowed_by_regime)
         {
@@ -278,74 +288,85 @@ void ProcessMarketCycle()
 
          if(passed_filters)
            {
-            // Close all opposite positions immediately on signal reversal
-            double closed_opp_pnl = 0.0;
-            int opp_closed = g_trade_manager.CloseOppositePositions(candidate_is_buy, closed_opp_pnl, "Signal Reversal Flip");
-            if(opp_closed > 0)
+            open_positions = g_trade_manager.GetOpenPositionsCount();
+            double current_basket_vol = g_trade_manager.GetOpenPositionsTotalVolume(candidate_is_buy ? POSITION_TYPE_BUY : POSITION_TYPE_SELL);
+
+            if(open_positions >= InpMaxOpenTrades)
               {
-               PrintFormat("🔄 [SIGNAL_REVERSAL] Closed %d opposite trades. Realized PnL: %s$%.2f USD. Opening %s positions.",
-                           opp_closed, (closed_opp_pnl >= 0 ? "+" : ""), closed_opp_pnl, g_active_signal_dir);
-               open_positions = g_trade_manager.GetOpenPositionsCount();
+               g_gate_filter_status = StringFormat("MAX_POSITIONS_REACHED (%d/%d)", open_positions, InpMaxOpenTrades);
               }
-
-            int max_allowed_trades = MathMax(50, InpMaxOpenTrades);
-            if(open_positions < max_allowed_trades)
+            else if(current_basket_vol >= InpMaxTotalBasketLots)
               {
-               // Evaluate Volatility Clustering & Tail-Risk Shield
-               MqlVolShieldAssessment vol_assess;
-            double signal_confidence_val = (g_ai_online ? g_active_ai_conf : g_active_score);
-            g_vol_shield.AssessVolatilityAndTailRisk(g_candidate_lot, signal_confidence_val, vol_assess);
-            g_vol_shield.LogAssessment(vol_assess);
-
-            if(!vol_assess.is_trade_allowed)
-              {
-               g_gate_filter_status = vol_assess.decision_reason;
+               g_gate_filter_status = StringFormat("MAX_BASKET_LOTS_REACHED (%.2f >= %.2f Lots)", current_basket_vol, InpMaxTotalBasketLots);
               }
             else
               {
-               double final_lot = vol_assess.adjusted_lot;
-               if(final_lot > InpMaxLot) final_lot = InpMaxLot;
-               if(final_lot > 0.40) final_lot = 0.40;
-               // Execute institutional trade with volatility-adjusted lot
-               string comment = StringFormat("SSV2 %s (Score:%.0f|AI:%.0f|VS:%.2f)", g_active_signal_dir, g_active_score, g_active_ai_conf, vol_assess.risk_multiplier);
-               ulong ticket = 0;
-               if(g_trade_manager.ExecuteMarketOrder(candidate_is_buy, final_lot, candidate_sl, candidate_tp, comment, ticket))
+               // Evaluate Volatility Clustering & Tail-Risk Shield
+               MqlVolShieldAssessment vol_assess;
+               double signal_confidence_val = (g_ai_online ? g_active_ai_conf : g_active_score);
+               g_vol_shield.AssessVolatilityAndTailRisk(g_candidate_lot, signal_confidence_val, vol_assess);
+               g_vol_shield.LogAssessment(vol_assess);
+
+               if(!vol_assess.is_trade_allowed)
                  {
-                  g_filters.OnTradeExecuted(g_active_signal_dir);
-                  PrintFormat("🏆 [SIGNAL_EXPLANATION] %s", (candidate_is_buy ? score_buy.explanation : score_sell.explanation));
+                  g_gate_filter_status = vol_assess.decision_reason;
+                 }
+               else
+                 {
+                  double final_lot = vol_assess.adjusted_lot;
+                  if(final_lot > InpMaxLot) final_lot = InpMaxLot;
+                  if(final_lot > 0.40) final_lot = 0.40;
 
-                  // Telegram: Send VIP Institutional Trade Execution Alert with full reasons
-                  double entry_exec_price = candidate_is_buy ? ask : bid;
-                  double exec_risk_dist = MathAbs(entry_exec_price - candidate_sl);
-                  double exec_tp1 = candidate_is_buy ? (entry_exec_price + exec_risk_dist * InpPartialTPTriggerR) :
-                                                       (entry_exec_price - exec_risk_dist * InpPartialTPTriggerR);
-                  double exec_tp2 = candidate_tp;
+                  // Enforce hard ceiling on total basket volume
+                  if(current_basket_vol + final_lot > InpMaxTotalBasketLots)
+                    {
+                     final_lot = InpMaxTotalBasketLots - current_basket_vol;
+                     final_lot = MathFloor(final_lot * 100.0) / 100.0;
+                    }
 
-                  g_telegram.SendVIPTradeAlert(_Symbol, g_active_signal_dir, final_lot,
-                                               entry_exec_price, candidate_sl, exec_tp1, exec_tp2,
-                                               (candidate_is_buy ? score_buy : score_sell),
-                                               EnumToString(g_current_regime),
-                                               EnumToString(g_current_session),
-                                               g_current_atr);
+                  if(final_lot >= 0.01)
+                    {
+                     string comment = StringFormat("SSV2 %s (Score:%.0f|AI:%.0f|VS:%.2f)", g_active_signal_dir, g_active_score, g_active_ai_conf, vol_assess.risk_multiplier);
+                     ulong ticket = 0;
+                     if(g_trade_manager.ExecuteMarketOrder(candidate_is_buy, final_lot, candidate_sl, candidate_tp, comment, ticket))
+                       {
+                        g_filters.OnTradeExecuted(g_active_signal_dir);
+                        PrintFormat("🏆 [SIGNAL_EXPLANATION] %s", (candidate_is_buy ? score_buy.explanation : score_sell.explanation));
+
+                        // Telegram: Send VIP Institutional Trade Execution Alert with full reasons
+                        double entry_exec_price = candidate_is_buy ? ask : bid;
+                        double exec_risk_dist = MathAbs(entry_exec_price - candidate_sl);
+                        double exec_tp1 = candidate_is_buy ? (entry_exec_price + exec_risk_dist * InpPartialTPTriggerR) :
+                                                             (entry_exec_price - exec_risk_dist * InpPartialTPTriggerR);
+                        double exec_tp2 = candidate_tp;
+
+                        g_telegram.SendVIPTradeAlert(_Symbol, g_active_signal_dir, final_lot,
+                                                     entry_exec_price, candidate_sl, exec_tp1, exec_tp2,
+                                                     (candidate_is_buy ? score_buy : score_sell),
+                                                     EnumToString(g_current_regime),
+                                                     EnumToString(g_current_session),
+                                                     g_current_atr);
+                       }
+                    }
+                  else
+                    {
+                     g_gate_filter_status = StringFormat("MAX_BASKET_LOTS_REACHED (%.2f/%.2f Lots)", current_basket_vol, InpMaxTotalBasketLots);
+                    }
                  }
               }
            }
         }
      }
-   }
    else
      {
       g_gate_filter_status = "HOLD / Searching Setup";
      }
 
-   // 9. Update Real-Time HUD Panel
+   // 9. Manage Basket Exits (Target Margin ROI TP & Basket Exits)
    double cur_basket_pnl = 0.0;
    int cur_basket_cnt = 0;
    double cur_avg_p = 0.0;
-   if(InpEnableBasketDCA)
-     {
-      g_trade_manager.ManageBasketExits(cur_basket_pnl, cur_basket_cnt, cur_avg_p);
-     }
+   g_trade_manager.ManageBasketExits(cur_basket_pnl, cur_basket_cnt, cur_avg_p);
 
    g_hud.Render(_Symbol,
                 g_current_regime,

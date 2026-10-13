@@ -127,6 +127,7 @@ public:
 
 
    //+---------------------------------------------------------------+
+   //+---------------------------------------------------------------+
    //| Count Open Positions by Magic and Symbol                      |
    //+---------------------------------------------------------------+
    int GetOpenPositionsCount()
@@ -141,6 +142,63 @@ public:
            }
         }
       return count;
+     }
+
+   //+---------------------------------------------------------------+
+   //| Calculate Total Volume of Active Positions on Symbol & Magic   |
+   //+---------------------------------------------------------------+
+   double GetOpenPositionsTotalVolume(long match_type=-1)
+     {
+      double total_volume = 0.0;
+      for(int i = PositionsTotal() - 1; i >= 0; i--)
+        {
+         ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket)) continue;
+         if(PositionGetString(POSITION_SYMBOL) != m_symbol || PositionGetInteger(POSITION_MAGIC) != InpMagicNumber)
+            continue;
+
+         long p_type = PositionGetInteger(POSITION_TYPE);
+         if(match_type == -1 || p_type == match_type)
+           {
+            total_volume += PositionGetDouble(POSITION_VOLUME);
+           }
+        }
+      return total_volume;
+     }
+
+   //+---------------------------------------------------------------+
+   //| Calculate Total Broker Margin Locked by Active Positions      |
+   //+---------------------------------------------------------------+
+   double GetBasketMarginUsed()
+     {
+      double total_margin = 0.0;
+      for(int i = PositionsTotal() - 1; i >= 0; i--)
+        {
+         ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket)) continue;
+         if(PositionGetString(POSITION_SYMBOL) != m_symbol || PositionGetInteger(POSITION_MAGIC) != InpMagicNumber)
+            continue;
+
+         long pos_type = PositionGetInteger(POSITION_TYPE);
+         double pos_vol = PositionGetDouble(POSITION_VOLUME);
+         double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+
+         double pos_margin = 0.0;
+         ENUM_ORDER_TYPE ord_type = (pos_type == POSITION_TYPE_BUY) ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+         if(OrderCalcMargin(ord_type, m_symbol, pos_vol, open_price, pos_margin) && pos_margin > 0.0)
+           {
+            total_margin += pos_margin;
+           }
+         else
+           {
+            long leverage = AccountInfoInteger(ACCOUNT_LEVERAGE);
+            if(leverage <= 0) leverage = 100;
+            double contract_size = SymbolInfoDouble(m_symbol, SYMBOL_TRADE_CONTRACT_SIZE);
+            if(contract_size <= 0.0) contract_size = 1.0;
+            total_margin += (pos_vol * contract_size * open_price) / (double)leverage;
+           }
+        }
+      return total_margin;
      }
 
    //+---------------------------------------------------------------+
@@ -242,7 +300,23 @@ public:
 
       if(count == 0) return false;
 
-      // 1. Check Basket Target Profit
+      // 1. Check Dynamic Margin ROI Take Profit (Floating Profit >= Total Margin Invested)
+      if(InpEnableInvestedMarginTP && count > 0)
+        {
+         double total_margin = GetBasketMarginUsed();
+         double target_margin_roi = total_margin * (InpInvestedMarginROI_Pct / 100.0);
+         if(target_margin_roi < 10.0) target_margin_roi = 10.0; // Minimum $10.00 USD safety floor
+
+         if(total_profit >= target_margin_roi)
+           {
+            PrintFormat("🎯 [MARGIN_ROI_TP] 100%% Invested Margin Return reached! Net PnL: +$%.2f USD >= Target +$%.2f USD (Margin Locked: $%.2f USD). Closing all %d positions.",
+                        total_profit, target_margin_roi, total_margin, count);
+            CloseAllPositions(StringFormat("MARGIN_ROI_TP (+$%.2f)", total_profit));
+            return true;
+           }
+        }
+
+      // 2. Check Basket Target Profit (if Basket DCA enabled)
       if(InpEnableBasketDCA && total_profit >= InpBasketTargetUSD)
         {
          PrintFormat("🎯 [BASKET_TP] Target reached! Net PnL: +$%.2f (>= +$%.2f Target). Closing all %d positions.",
@@ -251,7 +325,7 @@ public:
          return true;
         }
 
-      // 2. Check Basket Emergency Stop Loss
+      // 3. Check Basket Emergency Stop Loss
       if(InpEnableBasketDCA && total_profit <= -InpBasketStopLossUSD)
         {
          PrintFormat("🛑 [BASKET_SL] Emergency cutoff hit! Net PnL: -$%.2f (<= -$%.2f Cutoff). Closing all %d positions.",

@@ -67,6 +67,7 @@ input double InpTrendBoosterScore   = 10.0;     // Score Bonus for Trend Continu
 input int    InpTrendBoosterMaxMins = 20;       // Max Minutes After Winner to Keep Booster Active (mins)
 
 //+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
 //| Input Parameters: Group E - Trade Management & Anti-Overtrading  |
 //+------------------------------------------------------------------+
 input group "=== [GROUP E] TRADE MANAGEMENT & ANTI-OVERTRADING ==="
@@ -74,7 +75,10 @@ input bool   InpEnableBasketDCA     = false;    // Disable Basket DCA (Instituti
 input double InpBasketTargetUSD     = 5.00;     // Basket Target Profit in USD
 input double InpBasketStopLossUSD   = 25.00;    // Emergency Basket Stop Loss in USD
 input int    InpGridStepPoints      = 6000;     // Pullback Step Distance
-input int    InpMaxOpenTrades       = 50;       // Maximum Concurrent Open Positions (Allow scaling up to 50 verified signals)
+input int    InpMaxOpenTrades       = 12;       // Maximum Concurrent Open Positions (Max 12 positions)
+input double InpMaxTotalBasketLots  = 4.50;     // Maximum Total Combined Volume on Active Side (Max 4.50 Lots)
+input bool   InpEnableInvestedMarginTP = true;  // Close Basket when Floating Profit >= Total Margin Invested (100% Margin ROI)
+input double InpInvestedMarginROI_Pct = 100.0;  // Target ROI on Invested Margin (100% = 1:1 Profit to Margin)
 input bool   InpEnablePartialTP     = false;    // Disable Partial TP (Let full position run to Take Profit)
 input double InpPartialTPTriggerR   = 1.0;      // Partial TP Trigger at X R-Multiple (1.0R)
 input double InpPartialTPPercent   = 50.0;     // Percentage of Volume to Close (50.0%)
@@ -88,7 +92,7 @@ input bool   InpEnableProfitLock    = false;    // Disable Profit Lock moving SL
 input double InpProfitLockUSD       = 5.00;     // Profit USD Trigger ($5.00)
 input int    InpMaxSpreadPoints     = 60;       // Maximum Allowed Spread (points)
 input bool   InpAllowDuplicateSignals = true;   // Allow Trades on Duplicate Signals (Scale in on same-direction signals)
-input int    InpDuplicateThrottleSecs = 10;     // Min Seconds Between Same-Direction Entries (10s Debounce)
+input int    InpDuplicateThrottleSecs = 30;     // Min Seconds Between Same-Direction Entries (30s Debounce)
 input int    InpCooldownAfterTrade  = 0;        // Cooldown Seconds After Trade (0s Instant Continuation)
 input int    InpCooldownAfterLoss   = 60;       // Cooldown Seconds After a Losing Basket (1 min)
 input int    InpMaxTradesPerSession = 9999;     // Maximum Trades Allowed per Session [Unlimited]

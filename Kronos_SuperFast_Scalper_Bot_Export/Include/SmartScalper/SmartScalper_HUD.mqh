@@ -172,8 +172,8 @@ public:
         }
       else
         {
-         pos_str = StringFormat("Open Scalps: %d/%d | Trades Today: %d | Losses: %d",
-                                open_trades, (int)MathMax(50, InpMaxOpenTrades), trades_today, losses_today);
+         pos_str = StringFormat("Active Basket: %d/%d (Cap: %.2f Lots) | PnL: $%+.2f",
+                                open_trades, InpMaxOpenTrades, InpMaxTotalBasketLots, basket_pnl);
         }
       SetLabel("Positions", pos_str, (open_trades > 0 ? (basket_pnl >= 0 ? clrLime : clrOrange) : clrSilver), 25, 175, 9);
 
