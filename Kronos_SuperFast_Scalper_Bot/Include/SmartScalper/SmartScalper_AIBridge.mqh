@@ -179,6 +179,16 @@ public:
            }
         }
 
+      // Validate signal freshness against TTL
+      if(m_latest_signal.generated_time > 0 && MathAbs((long)now - (long)m_latest_signal.generated_time) > m_latest_signal.valid_for_seconds)
+        {
+         m_is_online = false;
+         m_latest_signal.confidence = 0.0;
+         m_latest_signal.is_valid = false;
+         out_signal = m_latest_signal;
+         return false;
+        }
+
       // Signal is online and fresh
       m_latest_signal.is_valid = true;
       m_is_online = true;
