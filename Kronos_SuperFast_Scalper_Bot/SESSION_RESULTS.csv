@@ -1,0 +1,5 @@
+session,trades,net_profit,profit_factor,win_rate_pct,expectancy_usd,max_drawdown_usd,sharpe_ratio,status
+LONDON,234,32930.0,7.72,79.06,140.73,400.0,27.99,PASS
+NEW_YORK,290,42950.0,9.1,81.72,148.1,300.0,29.65,PASS
+LONDON_NY_OVERLAP,174,24640.0,8.04,79.89,141.61,570.0,31.65,PASS
+ASIAN,61,9560.0,9.69,81.97,156.72,200.0,39.22,PASS

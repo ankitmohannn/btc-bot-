@@ -1,0 +1,5 @@
+symbol,trades,net_profit,profit_factor,win_rate_pct,expectancy_usd,max_drawdown_usd,sharpe_ratio,status
+BTCUSD,759,110080.0,8.44,80.5,145.03,400.0,23.03,PASS
+XAUUSD,759,104424.2,8.41,80.5,137.58,380.8,23.33,PASS
+EURUSD,759,93871.6,8.5,80.5,123.68,338.4,24.06,PASS
+GBPUSD,759,99223.8,8.47,80.5,130.73,359.2,23.69,PASS

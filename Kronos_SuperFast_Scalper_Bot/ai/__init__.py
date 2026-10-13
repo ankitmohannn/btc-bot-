@@ -1,0 +1,1 @@
+# SmartScalper AI Package

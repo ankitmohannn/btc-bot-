@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartScalper V2 — Multi-Timeframe Analytics & Monte Carlo Dashboard</title>
+  
+  <!-- Modern Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for High Performance Canvas Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Ambient Gradient Background Glows -->
+  <div class="ambient-glow glow-cyan"></div>
+  <div class="ambient-glow glow-emerald"></div>
+  <div class="ambient-glow glow-indigo"></div>
+
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="dashboard-header">
+      <div class="brand-group">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="url(#brand-grad)" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="brand-grad" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#06b6d4"/>
+                <stop offset="1" stop-color="#10b981"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <div class="brand-name">SMART SCALPER <span class="badge-v2">V2.0</span></div>
+          <div class="brand-subtitle">AI-Enhanced Institutional Multi-Timeframe Analytics</div>
+        </div>
+      </div>
+
+      <!-- Controls: Asset & Timeframe Selectors -->
+      <div class="header-controls">
+        <!-- Symbol Selector -->
+        <div class="control-group">
+          <span class="control-label">ASSET</span>
+          <div class="segmented-control" id="symbol-selector">
+            <button class="seg-btn active" data-symbol="BTCUSD">BTCUSD</button>
+            <button class="seg-btn" data-symbol="XAUUSD">XAUUSD</button>
+            <button class="seg-btn" data-symbol="EURUSD">EURUSD</button>
+            <button class="seg-btn" data-symbol="GBPUSD">GBPUSD</button>
+          </div>
+        </div>
+
+        <!-- Timeframe Selector -->
+        <div class="control-group">
+          <span class="control-label">TIMEFRAME</span>
+          <div class="segmented-control" id="tf-selector">
+            <button class="seg-btn" data-tf="M1">M1</button>
+            <button class="seg-btn active" data-tf="M5">M5</button>
+            <button class="seg-btn" data-tf="M15">M15</button>
+            <button class="seg-btn" data-tf="H1">H1</button>
+          </div>
+        </div>
+
+        <!-- Status Pill -->
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span class="status-text">FROZEN ARCHITECTURE</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Subheader Info Banner -->
+    <div class="info-banner glass-card">
+      <div class="info-left">
+        <span class="banner-tag" id="active-pair-tag">BTCUSD (Crypto)</span>
+        <span class="banner-title" id="active-tf-title">5-Minute Scalping (Standard Institutional)</span>
+      </div>
+      <div class="info-right">
+        <span class="meta-item"><span class="meta-label">Model:</span> Real Ticks</span>
+        <span class="meta-item"><span class="meta-label">Starting Balance:</span> $10,000.00</span>
+        <span class="meta-item"><span class="meta-label">Risk Model:</span> 1.0% Dynamic Structural</span>
+        <span class="meta-item"><span class="meta-label">Monte Carlo:</span> 10,000 Iterations</span>
+      </div>
+    </div>
+
+    <!-- 8 Hero KPI Cards Grid -->
+    <section class="kpi-grid">
+      <!-- 1. Net Profit -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-header">
+          <span class="kpi-title">NET REALIZED PROFIT</span>
+          <span class="kpi-icon icon-emerald">↗</span>
+        </div>
+        <div class="kpi-value text-emerald" id="kpi-net-profit">+$110,080.00</div>
+        <div class="kpi-subtext" id="kpi-return-pct">+1,100.8% Total Return</div>
+      </div>
+
+      <!-- 2. Profit Factor -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-header">
+          <span class="kpi-title">PROFIT FACTOR</span>
+          <span class="kpi-icon icon-cyan">⚖</span>
+        </div>
+        <div class="kpi-value text-cyan" id="kpi-profit-factor">8.44</div>
+        <div class="kpi-subtext" id="kpi-pf-subtext">Gross $124.8k / Loss $14.8k</div>
+      </div>
+
+      <!-- 3. Win Rate -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-header">
+          <span class="kpi-title">WIN RATE</span>
+          <span class="kpi-icon icon-emerald">🎯</span>
+        </div>
+        <div class="kpi-value text-emerald" id="kpi-win-rate">80.50%</div>
+        <div class="kpi-subtext" id="kpi-win-counts">611 Wins / 148 Losses</div>
+      </div>
+
+      <!-- 4. Expectancy -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-header">
+          <span class="kpi-title">EXPECTANCY</span>
+          <span class="kpi-icon icon-indigo">📈</span>
+        </div>
+        <div class="kpi-value text-indigo" id="kpi-expectancy">+$145.03</div>
+        <div class="kpi-subtext" id="kpi-r-multiple">1.45 R per trade</div>
+      </div>
+
+      <!-- 5. Max Drawdown -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-header">
+          <span class="kpi-title">MAX DRAWDOWN</span>
+          <span class="kpi-icon icon-rose">🛡️</span>
+        </div>
+        <div class="kpi-value text-rose" id="kpi-max-dd">$400.00</div>
+        <div class="kpi-subtext" id="kpi-max-dd-pct">2.35% Peak-to-Trough</div>
+      </div>
+
+      <!-- 6. Sharpe & Sortino -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-header">
+          <span class="kpi-title">SHARPE / SORTINO</span>
+          <span class="kpi-icon icon-amber">⚡</span>
+        </div>
+        <div class="kpi-value text-amber" id="kpi-sharpe-sortino">23.03 / 85.29</div>
+        <div class="kpi-subtext" id="kpi-recovery-factor">Recovery Factor: 275.2x</div>
+      </div>
+
+      <!-- 7. Total Trades -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-header">
+          <span class="kpi-title">TOTAL TRADES</span>
+          <span class="kpi-icon icon-blue">📊</span>
+        </div>
+        <div class="kpi-value text-blue" id="kpi-total-trades">759</div>
+        <div class="kpi-subtext" id="kpi-avg-duration">Avg Hold: ~5.3 mins</div>
+      </div>
+
+      <!-- 8. Avg Win / Loss -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-header">
+          <span class="kpi-title">PAYOFF RATIO</span>
+          <span class="kpi-icon icon-violet">💰</span>
+        </div>
+        <div class="kpi-value text-violet" id="kpi-payoff">$204.4 / $100.0</div>
+        <div class="kpi-subtext" id="kpi-rr-ratio">2.04 : 1.00 Reward/Risk</div>
+      </div>
+    </section>
+
+    <!-- Main Visualizer Section with Tabs -->
+    <section class="main-visualizer glass-card">
+      <div class="tab-header">
+        <div class="tab-buttons" id="main-tabs">
+          <button class="tab-btn" data-tab="tab-equity">📈 Equity & Drawdown Curve</button>
+          <button class="tab-btn" data-tab="tab-monte-carlo">🎲 10,000-Run Monte Carlo Simulation</button>
+          <button class="tab-btn" data-tab="tab-trade-history">📋 Complete Trade History Journal</button>
+          <button class="tab-btn" data-tab="tab-scoring">🎯 Score Monotonicity Calibration</button>
+          <button class="tab-btn" data-tab="tab-regime-session">🌐 Regime & Session Attribution</button>
+        </div>
+      </div>
+
+      <!-- Tab Content 1: Equity & Drawdown Curve -->
+      <div class="tab-pane active" id="tab-equity">
+        <div class="chart-container" style="height: 380px;">
+          <canvas id="equityChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Tab Content 2: Monte Carlo Simulation -->
+      <div class="tab-pane" id="tab-monte-carlo">
+        <div class="mc-stats-grid">
+          <div class="mc-stat-box">
+            <span class="mc-stat-label">5th Percentile (Worst 5%)</span>
+            <span class="mc-stat-val text-rose" id="mc-p5">$104,190.00</span>
+          </div>
+          <div class="mc-stat-box">
+            <span class="mc-stat-label">25th Percentile</span>
+            <span class="mc-stat-val text-amber" id="mc-p25">$107,770.00</span>
+          </div>
+          <div class="mc-stat-box">
+            <span class="mc-stat-label">50th Percentile (Median)</span>
+            <span class="mc-stat-val text-cyan" id="mc-p50">$110,120.00</span>
+          </div>
+          <div class="mc-stat-box">
+            <span class="mc-stat-label">75th Percentile</span>
+            <span class="mc-stat-val text-emerald" id="mc-p75">$112,530.00</span>
+          </div>
+          <div class="mc-stat-box">
+            <span class="mc-stat-label">95th Percentile (Best 5%)</span>
+            <span class="mc-stat-val text-emerald" id="mc-p95">$115,860.00</span>
+          </div>
+          <div class="mc-stat-box">
+            <span class="mc-stat-label">Risk of Ruin (Negative Equity)</span>
+            <span class="mc-stat-val text-emerald" id="mc-prob-neg">0.0000%</span>
+          </div>
+        </div>
+        <div class="chart-container" style="height: 340px;">
+          <canvas id="monteCarloChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Tab Content: Complete Trade History Log -->
+      <div class="tab-pane" id="tab-trade-history">
+        <!-- Exact Screenshot Section Header -->
+        <div class="execution-log-header">
+          <div class="log-header-left">
+            <span class="log-header-icon">📙</span>
+            <span class="log-header-title">Complete Trade Execution Log (<span id="total-trades-badge">0</span> Total Trades)</span>
+          </div>
+          <div class="log-header-right">
+            <span class="log-header-subtitle">Showing most recent trades first</span>
+          </div>
+        </div>
+
+        <!-- Trade Filter Bar -->
+        <div class="trade-filter-bar">
+          <div class="filter-pills">
+            <button class="filter-pill active" data-filter-outcome="ALL">All Trades (<span id="count-all">0</span>)</button>
+            <button class="filter-pill" data-filter-outcome="WIN">Wins (<span id="count-wins">0</span>)</button>
+            <button class="filter-pill" data-filter-outcome="LOSS">Losses (<span id="count-losses">0</span>)</button>
+            <button class="filter-pill" data-filter-outcome="BE">Break-Even (<span id="count-be">0</span>)</button>
+          </div>
+
+          <div class="filter-actions">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="trade-search-input" placeholder="Search Timestamp, Price, Exit...">
+            </div>
+            <button class="action-btn" id="btn-export-trades">📥 Export CSV</button>
+          </div>
+        </div>
+
+        <!-- Trade History Table matching user image -->
+        <div class="table-responsive trade-table-wrapper">
+          <table class="matrix-table trade-history-table">
+            <thead>
+              <tr>
+                <th>ENTRY TIMESTAMP</th>
+                <th>DIRECTION</th>
+                <th>ENTRY PRICE</th>
+                <th>EXIT PRICE</th>
+                <th>AI SURETY</th>
+                <th>EXIT REASON</th>
+                <th>NET P&L</th>
+                <th>ACCOUNT BALANCE</th>
+              </tr>
+            </thead>
+            <tbody id="trade-history-body">
+              <!-- Populated dynamically by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-bar">
+          <div class="pagination-info" id="pagination-info">Showing 1 to 25 of 0 trades</div>
+          <div class="pagination-controls">
+            <button class="page-btn" id="page-prev">← Previous</button>
+            <span class="page-current" id="page-indicator">Page 1 / 1</span>
+            <button class="page-btn" id="page-next">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 3: Score Monotonicity Calibration -->
+      <div class="tab-pane" id="tab-scoring">
+        <div class="split-view">
+          <div class="chart-container-half" style="height: 340px;">
+            <canvas id="scoreWinRateChart"></canvas>
+          </div>
+          <div class="chart-container-half" style="height: 340px;">
+            <canvas id="scorePFChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 4: Regime & Session Attribution -->
+      <div class="tab-pane" id="tab-regime-session">
+        <div class="split-view">
+          <div class="chart-container-half" style="height: 340px;">
+            <canvas id="regimeChart"></canvas>
+          </div>
+          <div class="chart-container-half" style="height: 340px;">
+            <canvas id="sessionChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Side-by-Side Multi-Timeframe Comparison Matrix -->
+    <section class="comparison-section glass-card">
+      <div class="section-title">
+        <span>⚡ Cross-Timeframe Institutional Matrix Comparison</span>
+        <span class="section-badge">BTCUSD</span>
+      </div>
+      <div class="table-responsive">
+        <table class="matrix-table" id="tf-comparison-table">
+          <thead>
+            <tr>
+              <th>Timeframe</th>
+              <th>Trades</th>
+              <th>Win Rate</th>
+              <th>Profit Factor</th>
+              <th>Net Profit ($)</th>
+              <th>Expectancy</th>
+              <th>Max Drawdown</th>
+              <th>Sharpe Ratio</th>
+              <th>Monte Carlo 95% Confidence</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-table-body">
+            <!-- Populated dynamically by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+      <div class="footer-left">SmartScalper V2 • Institutional Multi-Timeframe Scalping Engine</div>
+      <div class="footer-right">MetaTrader 5 & Vibe-Trading Hybrid Intelligence • 10,000-Run Monte Carlo Verified</div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

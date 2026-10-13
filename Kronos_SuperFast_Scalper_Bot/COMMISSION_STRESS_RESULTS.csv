@@ -1,0 +1,6 @@
+commission_multiplier,commission_per_lot_usd,trades,net_profit,profit_factor,win_rate_pct,expectancy_usd,max_drawdown_usd,sharpe_ratio,sortino_ratio,status
+0.0x,0.0,759,110080.0,8.44,80.5,145.03,400.0,23.03,85.29,PASS
+1.0x,7.0,759,107954.8,8.1,80.5,142.23,411.2,22.86,81.64,PASS
+1.5x,10.5,759,106892.2,7.93,80.5,140.83,416.8,22.78,79.89,PASS
+2.0x,14.0,759,105829.6,7.77,80.5,139.43,422.4,22.69,78.18,PASS
+3.0x,21.0,759,103704.4,7.46,80.5,136.63,433.6,22.51,74.89,PASS

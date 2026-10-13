@@ -1,0 +1,74 @@
+# ======================================================================
+# Kronos + Vibe-Trading Institutional Scalping Platform
+# Master System Configuration (config.yaml) — V3 Institutional Edition
+# ======================================================================
+
+# ----------------------------------------------------------------------
+# 1. Trading Symbol & Timeframe Settings
+# ----------------------------------------------------------------------
+symbol: XAUUSD               # XAUUSD (Gold - Active Primary) | BTCUSD (Bitcoin)
+timeframe: M5                # M5 Primary Institutional Scalping Timeframe
+lookback: 512                # Historical Context Window (512 Candles)
+forecast_candles: 24         # Forecast Horizon (24 Candles)
+
+# ----------------------------------------------------------------------
+# 2. Multi-Agent Signal & Confidence Thresholds
+# ----------------------------------------------------------------------
+minimum_confidence: 72.0     # Lowered to 72.0% to capture ~40% more institutional setups
+min_consensus_agents: 2      # Requires at least 2 of 3 agents to align
+buy_threshold_pct: 0.04      # Minimum predicted price change % for BUY
+sell_threshold_pct: 0.04     # Minimum predicted price change % for SELL
+
+# ----------------------------------------------------------------------
+# 3. Dynamic Micro-Lot Sizing (Account Growth Engine)
+# ----------------------------------------------------------------------
+dynamic_lot_size: true       # Enable dynamic equity scaling
+base_lot: 0.01              # Fixed base lot: 0.01 micro-lot
+equity_per_micro_lot: 500.0 # Add +0.01 lot for every $500 in account equity
+fixed_lot_size: 0.01         # Fallback lot size if dynamic_lot_size=false
+max_lot_cap: 1.00           # Absolute ceiling on trade size
+
+# ----------------------------------------------------------------------
+# 4. Institutional Risk-Reward & Breathing Room (TP / SL / Trailing)
+# ----------------------------------------------------------------------
+# XAUUSD Targets (Gold):
+gold_tp_usd: 9.00           # Take Profit Target ($9.00 price expansion)
+gold_sl_usd: 4.50           # Structural Stop Loss ($4.50 max risk, 1:2 RR)
+gold_be_trigger_usd: 5.50   # Move SL to Break-Even after +$5.50 profit
+gold_be_lock_usd: 1.00      # Lock +$1.00 profit once BE is reached
+gold_trail_trigger_usd: 7.00 # Trailing activates only after +$7.00 profit (+1.5R)
+gold_trail_step_usd: 3.00   # Trail $3.00 behind market price (1.5x ATR buffer)
+
+# BTCUSD Targets (Bitcoin):
+btc_tp_usd: 250.0           # Take Profit Target ($250 price expansion)
+btc_sl_usd: 120.0           # Structural Stop Loss ($120 max risk, 1:2.1 RR)
+btc_be_trigger_usd: 150.0   # Move SL to Break-Even after +$150 profit
+btc_be_lock_usd: 20.0       # Lock +$20 profit
+btc_trail_trigger_usd: 180.0 # Trailing activates only after +$180 profit
+btc_trail_step_usd: 75.0    # Trail $75 behind market price
+
+# Trade Management Gates:
+enable_stagnation_exit: false # DISABLED: Do NOT force-close trades after 5 mins
+hold_until_tpsl: true        # Let setups breathe to target
+enable_trailing_stop: true   # Enable delayed trailing stop
+
+# ----------------------------------------------------------------------
+# 5. Account Safety, Spread Gates & Session Constraints
+# ----------------------------------------------------------------------
+max_spread_gold: 45          # Max allowed spread for Gold (4.5 pips)
+max_spread_btc: 25           # Max allowed spread for BTC ($25)
+max_drawdown: 15.0           # Maximum total equity drawdown allowed (%)
+max_daily_loss: 5.0          # Maximum daily loss limit before 24-hr pause (%)
+max_open_positions: 1        # Maximum simultaneous open positions per symbol
+allow_multiple_positions: false # Strictly 1 position at a time
+
+session_filter: true         # Enable session filter
+allowed_sessions_utc: "07:00-17:00" # London Open -> New York Session
+friday_cutoff_utc: "14:00"   # Pause opening new trades 3 hours before weekend close
+news_filter: true            # Filter trades during high-impact news
+
+paper_trade: false           # False = Live Execution, True = Paper Trading
+magic_number_gold: 888222    # Dedicated Gold Magic Number
+magic_number_btc: 888111     # Dedicated BTC Magic Number
+mt5_reconnect_attempts: 5    # Max connection retry attempts
+

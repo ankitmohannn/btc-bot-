@@ -1,0 +1,8 @@
+pandas==2.2.2
+numpy==1.26.4
+MetaTrader5==5.0.50
+pyyaml==6.0.3
+openai==3.14.1
+httpx==0.28.1
+
+

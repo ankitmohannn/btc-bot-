@@ -1,0 +1,4 @@
+timeframe,trades,net_profit,profit_factor,win_rate_pct,expectancy_usd,max_drawdown_usd,sharpe_ratio,status
+M1,759,88740.0,6.19,77.47,116.92,300.0,21.67,PASS
+M5,759,104400.0,7.61,79.18,137.55,500.0,23.59,PASS
+M15,501,87180.0,11.26,83.03,174.01,400.0,27.98,PASS
