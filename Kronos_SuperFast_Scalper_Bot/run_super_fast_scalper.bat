@@ -8,8 +8,9 @@ echo ======================================================================
 echo.
 
 if exist "super_fast_scalper.py" (
-    python -u super_fast_scalper.py --symbol XAUUSD --timeframe M5
+    python -u super_fast_scalper.py --symbol BTCUSD --timeframe M5
 ) else if exist "kronos_btc\super_fast_scalper.py" (
+
     python -u kronos_btc\super_fast_scalper.py
 ) else if exist "Kronos-master\kronos_btc\super_fast_scalper.py" (
     python -u Kronos-master\kronos_btc\super_fast_scalper.py

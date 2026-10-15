@@ -27,7 +27,8 @@ class DiscordReporter:
         self.webhook_url = webhook_url
         self.interval_seconds = interval_minutes * 60
         self.running = True
-        self.symbol = "XAUUSD"
+        self.symbol = "BTCUSD"
+
 
     def _ensure_mt5(self):
         if not mt5.terminal_info():
@@ -155,7 +156,7 @@ class DiscordReporter:
             
             embed = {
                 "title": title,
-                "description": f"**Asset**: `XAUUSD (Gold M5)` | **Timestamp**: `<t:{int(time.time())}:F>`",
+                "description": f"**Asset**: `BTCUSD (Bitcoin M5)` | **Timestamp**: `<t:{int(time.time())}:F>`",
                 "color": color,
                 "fields": [
                     {

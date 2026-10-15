@@ -34,9 +34,10 @@ if _ROOT_DIR not in sys.path:
     sys.path.insert(0, _ROOT_DIR)
 
 class Bot247Supervisor:
-    def __init__(self, symbol: str = "XAUUSD", tf: str = "M5"):
+    def __init__(self, symbol: str = "BTCUSD", tf: str = "M5"):
         self.symbol = symbol.upper()
         self.tf = tf.upper()
+
         self.running = True
         
         self.proc_bridge = None
@@ -150,7 +151,8 @@ class Bot247Supervisor:
         log.info("Watchdog shutdown complete.")
 
 if __name__ == "__main__":
-    sym = sys.argv[1] if len(sys.argv) > 1 else "XAUUSD"
+    sym = sys.argv[1] if len(sys.argv) > 1 else "BTCUSD"
     tf = sys.argv[2] if len(sys.argv) > 2 else "M5"
     supervisor = Bot247Supervisor(symbol=sym, tf=tf)
     supervisor.run()
+

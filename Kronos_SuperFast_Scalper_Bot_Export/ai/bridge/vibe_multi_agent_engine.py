@@ -195,8 +195,9 @@ class VibeConvictionSizerMaster:
     """
     Agent 4 (Master Sizer): Synthesizes all agents into unified conviction and asset-specific sizing.
     """
-    def __init__(self, symbol: str = "XAUUSD"):
+    def __init__(self, symbol: str = "BTCUSD"):
         self.symbol = symbol.upper()
+
         self.smc_agent = MarketStructureAgent()
         self.trend_agent = TrendMomentumAgent()
         self.kronos_agent = KronosForecastAgent()

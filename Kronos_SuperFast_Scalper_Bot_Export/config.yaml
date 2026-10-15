@@ -6,8 +6,9 @@
 # ----------------------------------------------------------------------
 # 1. Trading Symbol & Timeframe Settings
 # ----------------------------------------------------------------------
-symbol: XAUUSD               # XAUUSD (Gold - Active Primary) | BTCUSD (Bitcoin)
+symbol: BTCUSD               # BTCUSD (Bitcoin - Active Primary)
 timeframe: M5                # M5 Primary Institutional Scalping Timeframe
+
 lookback: 512                # Historical Context Window (512 Candles)
 forecast_candles: 24         # Forecast Horizon (24 Candles)
 

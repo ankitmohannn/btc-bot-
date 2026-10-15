@@ -50,10 +50,11 @@ log = logging.getLogger("WaterfallScalper")
 class SuperFastScalper:
     def __init__(
         self,
-        symbol: str = "XAUUSD",
+        symbol: str = "BTCUSD",
         timeframe_str: str = "M5",
         enable_break_even: bool = True
     ):
+
         self.symbol = symbol.upper()
         self.timeframe_str = timeframe_str
         self.tf_enum = mt5.TIMEFRAME_M5 if timeframe_str == "M5" else mt5.TIMEFRAME_M1
@@ -468,8 +469,9 @@ class SuperFastScalper:
 
 def main():
     parser = argparse.ArgumentParser(description="Vibe Waterfall Scalper")
-    parser.add_argument("--symbol", type=str, default="XAUUSD", help="Trading symbol (default: XAUUSD)")
+    parser.add_argument("--symbol", type=str, default="BTCUSD", help="Trading symbol (default: BTCUSD)")
     parser.add_argument("--timeframe", type=str, default="M5", help="Timeframe string (default: M5)")
+
     args = parser.parse_args()
     
     scalper = SuperFastScalper(
