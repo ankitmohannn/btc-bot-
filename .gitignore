@@ -8,6 +8,10 @@ __pycache__/
 *.tmp
 scratch/
 
+# Runtime IPC signal files
+*kronos_signal*.csv
+*smart_scalper_signal*.json
+
 # OS generated files
 Thumbs.db
 ehthumbs.db

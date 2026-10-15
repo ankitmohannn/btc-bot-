@@ -172,8 +172,12 @@ void ProcessMarketCycle()
    bool recent_buy_profit = g_filters.IsRecentProfitDirection("BUY", InpTrendBoosterMaxMins * 60);
    bool recent_sell_profit = g_filters.IsRecentProfitDirection("SELL", InpTrendBoosterMaxMins * 60);
    MqlScoreBreakdown score_buy, score_sell;
-   g_scoring_engine.EvaluateSignal(true, g_features_m5, g_smc_m5, g_mtf, g_current_regime, g_current_session, spread_pts, g_active_ai_conf, recent_buy_profit, score_buy);
-   g_scoring_engine.EvaluateSignal(false, g_features_m5, g_smc_m5, g_mtf, g_current_regime, g_current_session, spread_pts, g_active_ai_conf, recent_sell_profit, score_sell);
+   
+   double ai_buy_conf = (g_ai_online && ai_packet.is_valid && ai_packet.direction == "BUY") ? ai_packet.confidence : 0.0;
+   double ai_sell_conf = (g_ai_online && ai_packet.is_valid && ai_packet.direction == "SELL") ? ai_packet.confidence : 0.0;
+
+   g_scoring_engine.EvaluateSignal(true, g_features_m5, g_smc_m5, g_mtf, g_current_regime, g_current_session, spread_pts, ai_buy_conf, recent_buy_profit, score_buy);
+   g_scoring_engine.EvaluateSignal(false, g_features_m5, g_smc_m5, g_mtf, g_current_regime, g_current_session, spread_pts, ai_sell_conf, recent_sell_profit, score_sell);
 
    // Determine Candidate Direction
    g_prev_signal_dir = g_active_signal_dir;  // Save previous for direction-change detection

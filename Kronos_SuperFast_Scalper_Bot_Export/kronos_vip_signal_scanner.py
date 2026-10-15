@@ -290,6 +290,65 @@ def analyze_symbol(symbol: str):
         "bar_time": last_bar_t
     }
 
+def export_signal_to_mt5_bridge(sig):
+    """Writes the active VIP signal into MT5 Common Files and local Files for SmartScalper EA ingestion."""
+    if not sig:
+        return
+    try:
+        appdata = os.getenv("APPDATA", "")
+        dest_dirs = []
+        if appdata:
+            common = os.path.join(appdata, "MetaQuotes", "Terminal", "Common", "Files")
+            dest_dirs.append(common)
+            tbase = os.path.join(appdata, "MetaQuotes", "Terminal")
+            if os.path.exists(tbase):
+                for item in os.listdir(tbase):
+                    c = os.path.join(tbase, item, "MQL5", "Files")
+                    if os.path.exists(c):
+                        dest_dirs.append(c)
+
+        dest_dirs.append(os.path.dirname(os.path.abspath(__file__)))
+
+        payload = {
+            "symbol": sig["symbol"],
+            "direction": sig["direction"],
+            "confidence": float(sig["score"]),
+            "regime_id": 1,
+            "expected_move": float(abs(sig["tp1"] - sig["price"])),
+            "risk_score": float(abs(sig["price"] - sig["sl"])),
+            "valid_for_seconds": 900,
+            "timestamp": int(time.time()),
+            "reason_codes": f"VIP_M15_{sig['grade'].replace(' ', '_').upper()}"
+        }
+        json_data = json.dumps(payload, indent=2)
+        csv_line = f"{int(time.time() * 1000)},{sig['direction']},{sig['price']:.5f},{sig['sl']:.5f},{sig['tp1']:.5f},0.40,{sig['score']:.1f}\n"
+
+        for d in dest_dirs:
+            try:
+                os.makedirs(d, exist_ok=True)
+                f1 = os.path.join(d, "smart_scalper_signal.json")
+                with open(f1 + ".tmp", "w", encoding="utf-8") as f:
+                    f.write(json_data)
+                os.replace(f1 + ".tmp", f1)
+
+                f2 = os.path.join(d, f"smart_scalper_signal_{sig['symbol']}.json")
+                with open(f2 + ".tmp", "w", encoding="utf-8") as f:
+                    f.write(json_data)
+                os.replace(f2 + ".tmp", f2)
+
+                f3 = os.path.join(d, f"kronos_signal_{sig['symbol']}.csv")
+                with open(f3, "w", encoding="utf-8") as f:
+                    f.write(csv_line)
+
+                f4 = os.path.join(d, "kronos_signal.csv")
+                with open(f4, "w", encoding="utf-8") as f:
+                    f.write(csv_line)
+            except Exception:
+                pass
+        print(f"📡 [MT5 BRIDGE SYNC] Synced VIP {sig['direction']} ({sig['score']:.0f}%) directly into MT5 EA bridge files.")
+    except Exception as ex:
+        print(f"⚠️ Error exporting signal to bridge: {ex}")
+
 def run_scanner_loop(symbols=DEFAULT_SYMBOLS, single_run=False, interval=20):
     print("==================================================================")
     print("🚀 KRONOS VIP INSTITUTIONAL SIGNAL SCANNER STARTED")
@@ -306,6 +365,9 @@ def run_scanner_loop(symbols=DEFAULT_SYMBOLS, single_run=False, interval=20):
             for sym in symbols:
                 sig = analyze_symbol(sym)
                 if sig:
+                    # Sync to MT5 EA Bridge immediately
+                    export_signal_to_mt5_bridge(sig)
+
                     key = (sig["symbol"], sig["direction"])
                     last_alert = LAST_ALERT_TIME.get(key, 0)
                     elapsed = now_ts - last_alert
